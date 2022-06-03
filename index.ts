@@ -1,20 +1,41 @@
 //Importando as bibliotecas
-import * as queryString from 'query-string';
+import { parse } from 'query-string';
 import * as url from 'url';
-import * as fs from 'fs';
+import { writeFile } from 'fs';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 
 //Definição de porta
 const port = 5000;
 
 const server = createServer((request: IncomingMessage, response: ServerResponse)=>{
-//Implementação do codigo
 
-response.end('Hello World')
+    const urlparse = url.parse(request.url ? request.url : '', true);
 
-});
+    //Receber informacoes do usuario
+    var resposta;
+    const params = parse(urlparse.search ? urlparse.search : '');
 
-//Execução
-server.listen(port, ()=> {
-    console.log(`Server running on port ${port}`);
-});
+    //Criar/Alterar um usuario
+    if(urlparse.pathname == '/criar-atualizar-usuario'){
+
+        //Salvar as informacoes
+        writeFile('users/' + params.id + '.txt', JSON.stringify(params), function (err: any){
+            if(err) throw err;
+            console.log('Saved!')
+
+            resposta = 'Usuario criado/atualizado com sucesso';
+
+            response.statusCode = 200;
+            response.setHeader('Content-Type', 'text/plain');
+            response.end(resposta);
+        });
+    }
+
+    //response.end('Hello World')
+
+    });
+
+    //Execução
+    server.listen(port, ()=> {
+        console.log(`Server running on port ${port}`);
+    });
